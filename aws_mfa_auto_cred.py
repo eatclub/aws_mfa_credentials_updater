@@ -8,7 +8,7 @@ def get_mfa_credentials(tag=None):
     cred_file = open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'r')
     creds = cred_file.read()
     open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'w').close()
-    write_creads = open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'w')
+    write_creds = open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'w')
 
     if "[mfa-role]" in creds:
         default_creds =  creds.split("[mfa-role]", 1)[0]
