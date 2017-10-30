@@ -4,7 +4,7 @@ def get_mfa_credentials(tag=None):
     mfa_token = raw_input("Please input an aws MFA token: ")
     
     credentials = local('aws sts get-session-token --serial-number ' + mfa_device_arn + ' --token-code ' + mfa_token, capture=True)
-    credentail_data = json.loads(credentials)['Credentials']  
+    credential_data = json.loads(credentials)['Credentials']  
     cred_file = open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'r')
     creds = cred_file.read()
     open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'w').close()
@@ -15,16 +15,16 @@ def get_mfa_credentials(tag=None):
         write_creds.write(default_creds)  
         write_creds.write("[mfa-role]\n")
         write_creds.write("\n")
-        write_creds.write("aws_access_key_id = " + credentail_data['AccessKeyId'] + "\n")
-        write_creds.write("aws_secret_access_key = " + credentail_data['SecretAccessKey'] + "\n")
-        write_creds.write("aws_session_token = " + credentail_data['SessionToken'] + "\n")
+        write_creds.write("aws_access_key_id = " + credential_data['AccessKeyId'] + "\n")
+        write_creds.write("aws_secret_access_key = " + credential_data['SecretAccessKey'] + "\n")
+        write_creds.write("aws_session_token = " + credential_data['SessionToken'] + "\n")
     else:
         write_creds.truncate()
         write_creds.write(creds)
         write_creds.write("[mfa-role]\n")
         write_creds.write("\n")
-        write_creds.write("aws_access_key_id = " + credentail_data['AccessKeyId'] + "\n")
-        write_creds.write("aws_secret_access_key = " + credentail_data['SecretAccessKey'] + "\n")
-        write_creds.write("aws_session_token = " + credentail_data['SessionToken'] + "\n")
+        write_creds.write("aws_access_key_id = " + credential_data['AccessKeyId'] + "\n")
+        write_creds.write("aws_secret_access_key = " + credential_data['SecretAccessKey'] + "\n")
+        write_creds.write("aws_session_token = " + credential_data['SessionToken'] + "\n")
 
-    return credentail_data
+    return credential_data
