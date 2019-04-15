@@ -1,30 +1,18 @@
-def get_mfa_credentials(tag=None):
-    mfa_device_info_list = local('aws iam list-mfa-devices', capture=True)
-    mfa_device_arn = json.loads(mfa_device_info_list)['MFADevices'][0]['SerialNumber']
+import boto3
+
+def get_mfa_credentials():
+    """
+    Prompt user for mfa token and generate session token
+    :return:
+    """
+    boto3.setup_default_session(profile_name='default')
+    iam_client = boto3.client('iam')
+    sts_client = boto3.client('sts')
+    mfa_device_sn = iam_client.list_mfa_devices()['MFADevices'][0]['SerialNumber']
     mfa_token = raw_input("Please input an aws MFA token: ")
-    
-    credentials = local('aws sts get-session-token --serial-number ' + mfa_device_arn + ' --token-code ' + mfa_token, capture=True)
-    credential_data = json.loads(credentials)['Credentials']  
-    cred_file = open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'r')
-    creds = cred_file.read()
-    open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'w').close()
-    write_creds = open(os.path.join(os.path.expanduser('~'),'.aws/credentials'), 'w')
-
-    if "[mfa-role]" in creds:
-        default_creds =  creds.split("[mfa-role]", 1)[0]
-        write_creds.write(default_creds)  
-        write_creds.write("[mfa-role]\n")
-        write_creds.write("\n")
-        write_creds.write("aws_access_key_id = " + credential_data['AccessKeyId'] + "\n")
-        write_creds.write("aws_secret_access_key = " + credential_data['SecretAccessKey'] + "\n")
-        write_creds.write("aws_session_token = " + credential_data['SessionToken'] + "\n")
-    else:
-        write_creds.truncate()
-        write_creds.write(creds)
-        write_creds.write("[mfa-role]\n")
-        write_creds.write("\n")
-        write_creds.write("aws_access_key_id = " + credential_data['AccessKeyId'] + "\n")
-        write_creds.write("aws_secret_access_key = " + credential_data['SecretAccessKey'] + "\n")
-        write_creds.write("aws_session_token = " + credential_data['SessionToken'] + "\n")
-
-    return credential_data
+    mfa_credentials = sts_client.get_session_token(
+        DurationSeconds=60 * 60 * 8,  # 8hrs
+        SerialNumber=mfa_device_sn,
+        TokenCode=mfa_token
+    )
+    return mfa_credentials['Credentials']
